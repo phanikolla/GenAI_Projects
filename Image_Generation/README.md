@@ -20,8 +20,7 @@ This project demonstrates a serverless architecture to generate images using Sta
 
 ## Architecture Diagram
 
-![Movie_Poster_design_GenAI](https://github.com/user-attachments/assets/8c70cf1d-12d7-4d9b-b1f5-5166ae966dfc)
-
+![Image Generator Architecture](./Image_Generation/PosterDesign.gif)
 
 ---
 
