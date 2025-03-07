@@ -20,9 +20,9 @@ Welcome to the **Gen AI Projects Repository**! This repository is dedicated to s
    - **Description**: Build a serverless API to summarize long-form text using generative AI models.
    - **Technologies**: Amazon Bedrock, Lambda, API Gateway, S3
 
-### 3. **Building a Chatbot with Llama 2, LangChain, and Streamlit**
-   - **Description**: Create an interactive chatbot powered by Llama 2 and LangChain, with a user-friendly interface built in Streamlit.
-   - **Technologies**: Llama 2, LangChain, Streamlit
+### 3. **Building a Chatbot with Llama 3, LangChain, and Streamlit**
+   - **Description**: Create an interactive chatbot powered by Llama 3 and LangChain, with a user-friendly interface built in Streamlit.
+   - **Technologies**: Llama 3, LangChain, Streamlit
 
 ### 4. **HR Q&A with Retrieval Augmented Generation (RAG)**
    - **Description**: Develop an HR assistant capable of answering employee-related questions using RAG techniques.
