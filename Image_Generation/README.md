@@ -20,7 +20,7 @@ This project demonstrates a serverless architecture to generate images using Sta
 
 ## Architecture Diagram
 
-![Image Generator Architecture](./Image_Generation/PosterDesign.gif)
+![Architecture](https://github.com/phanikolla/GenAI_Projects/blob/e2a81793db2a6554eb2b95e4dd557733f085a1cb/Image_Generation/PosterDesign.gif)
 
 ---
 
