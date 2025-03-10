@@ -73,15 +73,8 @@ Body:
 | Cost/1k req (₹) | 2.17   | 0.89    | 3.45   |
 
 ## 🌐 Architecture
-graph TD
-A[User] -->|POST| B(API Gateway)
-B --> C[AWS Lambda]
-C --> D{AWS Bedrock}
-D -->|Cohere| E[Summary]
-D -->|Mistral| E
-D -->|Claude| E
-C --> F[CloudWatch Metrics]
-E --> G[User]
+
+![Text Summarization](./Text_Summarization.png)
 
 ## 🔧 Advanced Features
 **Multi-LLM Fallback System**
