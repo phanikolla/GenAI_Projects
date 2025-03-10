@@ -74,7 +74,7 @@ Body:
 
 ## 🌐 Architecture
 
-![Text Summarization](./Text_Summarization.png)
+![Text Summarization](./TextSummarization.gif)
 
 ## 🔧 Advanced Features
 **Multi-LLM Fallback System**
