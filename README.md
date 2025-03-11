@@ -11,14 +11,15 @@ Welcome to the **Gen AI Projects Repository**! This repository is dedicated to s
    - **Status**: ✅ Completed
    - **Technologies**: API Gateway, Lambda, Amazon Bedrock, S3, CloudWatch
    - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Image_Generation
-
+     
+### 2. **Text Summarization**
+   - **Description**: Build a serverless API to summarize long-form text using generative AI models.
+   - **Status**: ✅ Completed
+   - **Technologies**: Amazon Bedrock, Lambda, API Gateway
+   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Text%20Summarization
 ---
 
 ## Upcoming Projects
-
-### 2. **Text Summarization**
-   - **Description**: Build a serverless API to summarize long-form text using generative AI models.
-   - **Technologies**: Amazon Bedrock, Lambda, API Gateway, S3
 
 ### 3. **Building a Chatbot with Llama 3, LangChain, and Streamlit**
    - **Description**: Create an interactive chatbot powered by Llama 3 and LangChain, with a user-friendly interface built in Streamlit.
