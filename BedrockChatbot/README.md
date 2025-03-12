@@ -14,6 +14,14 @@
 - Enterprise-grade LangChain architecture
 - ₹0.03/query cost efficiency
 
+---
+
+## Architecture Diagram
+
+![Architecture](https://github.com/phanikolla/GenAI_Projects/blob/d542b98ec77687cee70eade2fe11c1be2fbc4dbc/BedrockChatbot/chatbot.gif)
+
+---
+
 ## 📋 Prerequisites
 
 ### List of items to be installed
