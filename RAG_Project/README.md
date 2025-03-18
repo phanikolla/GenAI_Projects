@@ -2,6 +2,10 @@
 
 Reteival Augmented Generation (RAG) system that enables efficient question-answering from large documents by connecting large language models with a custom knowledge base.
 
+[![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-FF9900?logo=amazonaws)](https://aws.amazon.com/bedrock/)
+[![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python)](https://www.python.org/)
+[![Serverless](https://img.shields.io/badge/Architecture-Serverless-FD5750)](https://aws.amazon.com/serverless/)
+
 # Overview
 
 This system processes, indexes, and retrieves information from extensive technical documentation to provide accurate, context-aware responses in milliseconds. By leveraging Amazon Bedrock's powerful models and FAISS vector store, it can handle documents that exceed standard LLM token limits.
