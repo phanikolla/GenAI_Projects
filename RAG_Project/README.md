@@ -6,6 +6,10 @@ Reteival Augmented Generation (RAG) system that enables efficient question-answe
 
 This system processes, indexes, and retrieves information from extensive technical documentation to provide accurate, context-aware responses in milliseconds. By leveraging Amazon Bedrock's powerful models and FAISS vector store, it can handle documents that exceed standard LLM token limits.
 
+## 🌐 Architecture
+
+![RAG](./RAG.gif)
+
 # Features
 
 ✨ Context-Aware Search: Understands complex queries beyond simple keyword matching
