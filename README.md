@@ -17,17 +17,22 @@ Welcome to the **Gen AI Projects Repository**! This repository is dedicated to s
    - **Status**: ✅ Completed
    - **Technologies**: Amazon Bedrock, Lambda, API Gateway
    - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Text%20Summarization
----
-
-## Upcoming Projects
-
+     
 ### 3. **Building a Chatbot with Llama 3, LangChain, and Streamlit**
    - **Description**: Create an interactive chatbot powered by Llama 3 and LangChain, with a user-friendly interface built in Streamlit.
+   - - **Status**: ✅ Completed
    - **Technologies**: Llama 3, LangChain, Streamlit
+   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Text%20Summarization
 
 ### 4. **HR Q&A with Retrieval Augmented Generation (RAG)**
    - **Description**: Develop an HR assistant capable of answering employee-related questions using RAG techniques.
+   - - **Status**: ✅ Completed
    - **Technologies**: Amazon Bedrock, LangChain, S3
+   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/RAG_Project
+
+---
+
+## Upcoming Projects
 
 ### 5. **Serverless E-Learning App**
    - **Description**: Build an e-learning platform with a knowledge base for personalized learning experiences.
