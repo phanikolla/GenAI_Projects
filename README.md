@@ -22,7 +22,7 @@ Welcome to the **Gen AI Projects Repository**! This repository is dedicated to s
    - **Description**: Create an interactive chatbot powered by Llama 3 and LangChain, with a user-friendly interface built in Streamlit.
    - **Status**: ✅ Completed
    - **Technologies**: Llama 3, LangChain, Streamlit
-   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Text%20Summarization
+   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/BedrockChatbot
 
 ### 4. **Question and Answering with Retrieval Augmented Generation (RAG)**
    - **Description**: Develop an HR assistant capable of answering employee-related questions using RAG techniques.
