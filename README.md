@@ -30,13 +30,14 @@ Welcome to the **Gen AI Projects Repository**! This repository is dedicated to s
    - **Technologies**: Amazon Bedrock, LangChain, S3
    - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/RAG_Project
 
+### 5. **Serverless E-Learning App**
+   - **Description**: Build an e-learning platform with a knowledge base for personalized learning experiences.
+   - **Status**: ✅ Completed
+   - **Technologies**: Lambda, API Gateway, S3, Bedrock Knowledgebase, OpenSearch Vector Store
+   - **Details**: https://github.com/phanikolla/GenAI_Projects/tree/main/Knowledgebase_Project
 ---
 
 ## Upcoming Projects
-
-### 5. **Serverless E-Learning App**
-   - **Description**: Build an e-learning platform with a knowledge base for personalized learning experiences.
-   - **Technologies**: Lambda, API Gateway, S3
 
 ### 6. **Building AGENTS with Bedrock Agents and Knowledgebase**
    - **Description**: Create intelligent agents that can perform tasks autonomously using Bedrock Agents and a custom knowledge base.
