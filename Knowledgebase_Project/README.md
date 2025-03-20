@@ -18,6 +18,10 @@ This project leverages AWS Bedrock KnowledgeBase to create an AI-powered Learnin
 
 🔄 **Continuous Learning System**: Platform gets smarter with every interaction
 
+## 🌐 Architecture
+
+![Knowledge Base](./knowledgebase.gif)
+
 ## Technical Implementation
 
 - **Amazon Bedrock**: Utilized KnowledgeBase, Titan Text Embedding, and Claude 2 models
