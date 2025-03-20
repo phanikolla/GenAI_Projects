@@ -1,8 +1,10 @@
 # L&D App using AWS Bedrock KnowledgeBase
 
+![AWS](https://img.shields.io/badge/AWS-Bedrock-orange) ![Python](https://img.shields.io/badge/Python-3.8%2B-blue) ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
+
 ## Project Overview
 
-This project leverages AWS Bedrock KnowledgeBase to create an AI-powered Learning and Development (L&D) application. It demonstrates the integration of cloud-native architecture with generative AI to deliver personalized and adaptive learning experiences.
+This project leverages AWS Bedrock KnowledgeBase to create an AI-powered Learning and Development (L&D) application. It demonstrates the integration of cloud-native architecture with generative AI to deliver personalized and adaptive learning experiences that evolve with each interaction.
 
 ## Features
 
@@ -24,34 +26,115 @@ This project leverages AWS Bedrock KnowledgeBase to create an AI-powered Learnin
 - **AWS API Gateway**: Created secure API endpoints for frontend communication
 - **Vector Store**: Deployed OpenSearch by AWS for efficient embedding retrieval
 
-## 🌐 Architecture
+## Architecture Overview
 
-![Knowledgebase](./knowledgebase.gif)
+This project implements a Retrieval Augmented Generation (RAG) architecture that combines the power of large language models with information retrieval systems to provide accurate and contextually relevant responses.
+
+<details>
+<summary>RAG Workflow</summary>
+
+1. **Indexing Pipeline** (offline process):
+   - **Load**: Document loaders ingest data from S3 buckets
+   - **Split**: Text splitters break documents into manageable chunks
+   - **Store**: Chunks are converted to embeddings and stored in OpenSearch
+
+2. **Retrieval and Generation** (runtime process):
+   - User submits a query through the API
+   - System retrieves relevant information from knowledge base
+   - Retrieved context augments the original query
+   - Claude model generates a response based on the augmented prompt
+</details>
+
+## Prerequisites
+
+- AWS Account with appropriate permissions
+- Python 3.8 or higher
+- AWS CLI configured
 
 ## Setup and Deployment
 
-1. Clone the repository:
+### 1. Clone the repository
 
 git clone https://github.com/your-username/Gen_AI_Projects.git
-
 cd Gen_AI_Projects/Knowledgebase_Project
 
-2. Configure AWS credentials and region
 
-3. Deploy the infrastructure:
+### 2. Set up a virtual environment
 
-# Add deployment commands here
+python -m venv venv
+source venv/bin/activate # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 
-4. Set up the client application:
+### 3. Configure AWS credentials
 
-# Add client setup instructions here
+aws configure
 
-## Usage
+### 4. Create S3 bucket for knowledge base documents
 
-Provide instructions on how to use the L&D app, including:
-- How to upload content
-- How to query the knowledge base
-- How to access personalized learning paths
+aws s3 mb s3://your-knowledge-base-bucket
+
+### 5. Upload documents to S3
+
+aws s3 cp ./data/ s3://your-knowledge-base-bucket/ --recursive
+
+### 6. Create Amazon Bedrock Knowledge Base
+
+Navigate to Amazon Bedrock in AWS Console
+
+Select Knowledge Base > Create Knowledge Base
+
+Follow UI steps to connect your S3 bucket and configure settings
+
+### 7. Deploy Lambda function
+
+cd lambda
+zip -r function.zip .
+aws lambda create-function
+--function-name L&D-KnowledgeBase-Function
+--runtime python3.8
+--zip-file fileb://function.zip
+--handler app.lambda_handler
+--role arn:aws:iam::YOUR_ACCOUNT_ID:role/lambda-bedrock-role
+
+### 8. Set up API Gateway
+
+Create API Gateway REST API through AWS Console
+
+Connect to Lambda function
+
+Deploy API
+
+## Usage Guidelines
+
+### Querying the Knowledge Base
+
+This application can be used to:
+
+1. **Answer Questions**: Get precise answers from your organization's knowledge base
+response = client.retrieve_and_generate(
+knowledgeBaseId="your-kb-id",
+input={
+"text": "What are the key features of our new product?"
+}
+)
+
+2. **Generate Summaries**: Create concise summaries of lengthy documents
+
+response = client.retrieve_and_generate(
+knowledgeBaseId="your-kb-id",
+input={
+"text": "Summarize our Q2 sales report"
+}
+)
+
+3. **Create Learning Paths**: Generate personalized learning recommendations
+
+response = client.retrieve_and_generate(
+knowledgeBaseId="your-kb-id",
+input={
+"text": "Create a learning path for Python development"
+}
+)
 
 ## Key Learnings
 
@@ -62,23 +145,12 @@ This project demonstrates that combining cloud-native architecture with generati
 - Integration with existing LMS platforms
 - Multi-language support
 - Advanced analytics dashboard for learning progress
-
-## Contributing
-
-We welcome contributions to improve the L&D app. Please follow these steps:
-1. Fork the repository
-2. Create a new branch
-3. Make your changes and commit them
-4. Push to your fork and submit a pull request
+- Mobile application for on-the-go learning
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Contact
 
 For any queries or suggestions, please open an issue or contact [Phani Kumar](mailto:pkkolla24@gmail.com).
-
----
-
-Last updated: March 20, 2025
