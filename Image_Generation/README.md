@@ -1,90 +1,52 @@
-# Image Generator using Generative AI and AWS
+# 🎨 Serverless Image Generator (Bedrock + Stable Diffusion)
 
-This project demonstrates a serverless architecture to generate images using Stability AI's Stable Diffusion model hosted on AWS Bedrock. The system is designed to process text prompts via REST API calls (Postman) and return pre-signed URLs for accessing the generated images.
+[![AWS Lambda](https://img.shields.io/badge/AWS-Lambda-FF9900?logo=amazonaws&style=for-the-badge)](https://aws.amazon.com/lambda/)
+[![API Gateway](https://img.shields.io/badge/API-Gateway-red?logo=amazonaws&style=for-the-badge)](https://aws.amazon.com/api-gateway/)
+[![Stable Diffusion](https://img.shields.io/badge/Model-Stable%20Diffusion-blue?style=for-the-badge)](https://stability.ai/)
 
----
+## 📖 Overview
+This project implements a fully **Serverless GenAI Architecture**. Instead of running heavy GPU instances to host image models, this solution leverages **Amazon Bedrock** to generate images via API calls. It exposes a REST API that accepts text prompts and returns secure, pre-signed S3 URLs for the generated images.
 
-## Project Overview
+### 🚀 Key Features
+*   **Zero Infrastructure Management:** purely serverless (Lambda + API Gateway).
+*   **Secure Delivery:** Images are stored in a private S3 bucket and accessed only via time-limited Pre-signed URLs.
+*   **Scalable:** Handles concurrent requests automatically via AWS Lambda.
 
-### Workflow:
-1. **Input**: Users send text prompts via Postman to the REST API exposed by API Gateway.
-2. **Processing**: 
-   - API Gateway triggers an AWS Lambda function.
-   - Lambda sends the prompt and inference parameters to AWS Bedrock, which hosts Stability AI's Stable Diffusion model.
-3. **Output**:
-   - The generated image is stored in an S3 bucket.
-   - Lambda generates a pre-signed URL for the stored image.
-   - The pre-signed URL is returned via API Gateway, allowing users to securely access the image.
+## 🏗️ Architecture
+![Architecture](./PosterDesign.gif)
 
----
+## ⚙️ How it Works
+1.  User sends a POST request to API Gateway: `{"prompt": "A futuristic city"}`.
+2.  Lambda triggers Bedrock (Stable Diffusion model).
+3.  Bedrock returns base64 image data.
+4.  Lambda decodes and saves the image to a private **S3 Bucket**.
+5.  Lambda generates a **Pre-signed URL** (valid for 5 mins) and returns it to the user.
 
-## Architecture Diagram
+## 💻 Usage (Postman)
 
-![Architecture](https://github.com/phanikolla/GenAI_Projects/blob/e2a81793db2a6554eb2b95e4dd557733f085a1cb/Image_Generation/PosterDesign.gif)
+**Endpoint:** `POST https://<your-api-id>.execute-api.us-east-1.amazonaws.com/prod/generate`
 
----
-
-## Tech Stack
-
-- **Postman**: To invoke the REST API and test requests.
-- **API Gateway**: For managing REST API endpoints.
-- **AWS Lambda**: For serverless processing of prompts and generating pre-signed URLs.
-- **AWS Bedrock**: Hosting Stability AI's Stable Diffusion model for image generation.
-- **AWS S3**: For storing generated images as objects.
-- **CloudWatch Logs**: For monitoring and debugging.
-
----
-
-## How to Run the Project
-
-### Prerequisites:
-- AWS account with permissions for API Gateway, Lambda, Bedrock, S3, and CloudWatch.
-- Postman installed for testing API requests.
-
-### Steps:
-1. Clone this repository:
-git clone https://github.com/phanikolla/GenAI_Projects.git
-cd Gen_AI_Projects/Image_generator
-2. Deploy the architecture using AWS services (API Gateway, Lambda, Bedrock, S3).
-3. Use Postman to send a `POST` request to the API Gateway endpoint with a text prompt in the body:
+**Body:**
+```json
 {
-"prompt": "A futuristic cityscape at sunset"
+  "prompt": "A cyberpunk workspace with neon lights, 8k resolution"
 }
-4. Receive the pre-signed URL in the response and use it to access the generated image.
+```
 
----
-
-## Example Request and Response
-
-### Sample Input (Postman):
+**Response:**
+```json
 {
-"prompt": "A serene mountain landscape with a lake"
+  "status": "success",
+  "image_url": "https://my-bucket.s3.amazonaws.com/gen-123.jpg?AWSAccessKeyId=..."
 }
+```
 
-### Sample Response:
-{
-"image_url": "https://<your_bucket>.s3.amazonaws.com/<generated_image>?AWSAccessKeyId=<key>&Signature=<signature>&Expires=<timestamp>"
-}
-
----
-
-## Future Enhancements
-
-- Add support for batch processing multiple prompts.
-- Integrate additional generative AI models for diverse outputs.
-- Implement authentication for secure API access.
+## 🧠 Key Learnings & Patterns
+*   **Handling Binary Data:** API Gateway has a 10MB payload limit. Passing base64 images directly through the API response is bad practice. The **"S3 Pre-signed URL" pattern** used here is the enterprise-standard way to deliver large assets securely and efficiently.
+*   **Cold Starts:** I optimized the Lambda function by moving the `boto3` client initialization outside the handler to reuse connections across warm invocations.
 
 ---
+*Maintained by Phani Kolla*
 
-## License
-
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
-
-## Contact
-
-Feel free to reach out if you have questions or suggestions!
-
-- **LinkedIn**: [My LinkedIn Profile](https://www.linkedin.com/in/phanikumarkolla/)
-- **GitHub**: [My GitHub Profile](https://github.com/phanikolla)
