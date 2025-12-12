@@ -1,0 +1,184 @@
+{
+  "info": {
+    "name": "Bedrock Customer Support Agent",
+    "description": "API collection for testing the Bedrock Agent",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "api_endpoint",
+      "value": "https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/dev/agent",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Create Support Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I cannot login to my account. The password reset link is not working.\",\n  \"customer_id\": \"CUST-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Create a new support ticket for a customer issue"
+      }
+    },
+    {
+      "name": "Retrieve Customer Info",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Show me my ticket history and account information\",\n  \"customer_id\": \"CUST-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Retrieve customer information and ticket history"
+      }
+    },
+    {
+      "name": "Update Ticket Status",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Please update ticket TKT-XXXXXXXX to resolved status\",\n  \"customer_id\": \"CUST-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Update the status of an existing ticket"
+      }
+    },
+    {
+      "name": "Search Tickets",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"Show me all my open tickets\",\n  \"customer_id\": \"CUST-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Search for tickets by various criteria"
+      }
+    },
+    {
+      "name": "Escalate Issue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"This is urgent! My business is down and I need immediate help from a human agent!\",\n  \"customer_id\": \"CUST-12345\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Escalate a critical issue to human support"
+      }
+    },
+    {
+      "name": "Billing Issue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I was charged twice for my subscription this month\",\n  \"customer_id\": \"CUST-67890\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Test billing-related issue handling"
+      }
+    },
+    {
+      "name": "Technical Issue",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"The application keeps crashing when I try to upload files larger than 10MB\",\n  \"customer_id\": \"CUST-11111\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Test technical issue handling"
+      }
+    },
+    {
+      "name": "Multi-turn Conversation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"message\": \"I need help\",\n  \"customer_id\": \"CUST-22222\",\n  \"session_id\": \"test-session-123\"\n}"
+        },
+        "url": {
+          "raw": "{{api_endpoint}}",
+          "host": ["{{api_endpoint}}"]
+        },
+        "description": "Test conversation continuity with session ID"
+      }
+    }
+  ]
+}

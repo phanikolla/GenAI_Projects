@@ -1,0 +1,13 @@
+# AWS SDK and Core Dependencies
+boto3>=1.34.0
+botocore>=1.34.0
+
+# Date and Time Utilities
+python-dateutil>=2.8.2
+
+# JSON and Data Processing
+requests>=2.31.0
+
+# Development and Testing (optional)
+# pytest>=7.4.0
+# moto>=4.2.0

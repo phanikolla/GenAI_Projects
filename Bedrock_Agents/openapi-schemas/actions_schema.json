@@ -1,0 +1,226 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Customer Support Tools API",
+    "version": "1.0.0",
+    "description": "API for customer support ticket management"
+  },
+  "paths": {
+    "/tickets": {
+      "post": {
+        "summary": "Create a new support ticket",
+        "description": "Creates a new support ticket for a customer issue",
+        "operationId": "createTicket",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique customer identifier"
+          },
+          {
+            "name": "issue_description",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Detailed description of the customer issue"
+          },
+          {
+            "name": "issue_category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["billing", "technical", "account", "other"]
+            },
+            "description": "Category of the issue"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["high", "medium", "low"]
+            },
+            "description": "Priority level of the ticket"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "ticket_id": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update ticket status",
+        "description": "Updates the status of an existing support ticket",
+        "operationId": "updateTicket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ticket identifier"
+          },
+          {
+            "name": "new_status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["open", "in-progress", "resolved", "closed"]
+            },
+            "description": "New status for the ticket"
+          },
+          {
+            "name": "resolution_notes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Notes about the resolution"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket updated successfully"
+          }
+        }
+      }
+    },
+    "/tickets/search": {
+      "get": {
+        "summary": "Search support tickets",
+        "description": "Search and retrieve tickets by various criteria",
+        "operationId": "searchTickets",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Customer ID to filter tickets"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by ticket status"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Filter by priority level"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10
+            },
+            "description": "Maximum number of results"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tickets retrieved successfully"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "summary": "Retrieve customer information",
+        "description": "Get customer details and ticket history",
+        "operationId": "getCustomer",
+        "parameters": [
+          {
+            "name": "customer_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Unique customer identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer information retrieved successfully"
+          }
+        }
+      }
+    },
+    "/tickets/escalate": {
+      "post": {
+        "summary": "Escalate ticket to human support",
+        "description": "Escalate a ticket that requires human intervention",
+        "operationId": "escalateTicket",
+        "parameters": [
+          {
+            "name": "ticket_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Ticket ID to escalate"
+          },
+          {
+            "name": "reason",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Reason for escalation"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Ticket escalated successfully"
+          }
+        }
+      }
+    }
+  }
+}

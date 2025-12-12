@@ -1,0 +1,278 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Serverless Bedrock Agent - Customer Support Platform'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+
+Resources:
+  # DynamoDB Tables
+  TicketsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'support-tickets-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: ticket_id
+          AttributeType: S
+        - AttributeName: customer_id
+          AttributeType: S
+        - AttributeName: created_at
+          AttributeType: S
+      KeySchema:
+        - AttributeName: ticket_id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: customer-index
+          KeySchema:
+            - AttributeName: customer_id
+              KeyType: HASH
+            - AttributeName: created_at
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+        - Key: Project
+          Value: BedrockAgent
+
+  CustomersTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub 'customers-${Environment}'
+      AttributeDefinitions:
+        - AttributeName: customer_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: customer_id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      Tags:
+        - Key: Environment
+          Value: !Ref Environment
+
+  # S3 Bucket for Lambda Code
+  LambdaCodeBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'bedrock-agent-lambda-${AWS::AccountId}-${Environment}'
+      VersioningConfiguration:
+        Status: Enabled
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+  # IAM Role for Action Group Lambda
+  ActionGroupLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'bedrock-action-group-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: DynamoDBAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                  - 'dynamodb:Query'
+                  - 'dynamodb:Scan'
+                Resource:
+                  - !GetAtt TicketsTable.Arn
+                  - !Sub '${TicketsTable.Arn}/index/*'
+                  - !GetAtt CustomersTable.Arn
+
+  # Action Group Lambda Function
+  ActionGroupLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'bedrock-action-group-${Environment}'
+      Runtime: python3.11
+      Role: !GetAtt ActionGroupLambdaRole.Arn
+      Handler: lambda_function.lambda_handler
+      Timeout: 60
+      MemorySize: 512
+      Environment:
+        Variables:
+          TICKETS_TABLE: !Ref TicketsTable
+          CUSTOMERS_TABLE: !Ref CustomersTable
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          import json
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': json.dumps('Placeholder')}
+
+  # Lambda Permission for Bedrock
+  BedrockLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ActionGroupLambda
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  # IAM Role for Query Agent Lambda
+  QueryAgentLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub 'bedrock-query-agent-role-${Environment}'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: BedrockAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'bedrock:InvokeAgent'
+                  - 'bedrock:InvokeModel'
+                Resource: '*'
+
+  # Query Agent Lambda Function
+  QueryAgentLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub 'bedrock-query-agent-${Environment}'
+      Runtime: python3.11
+      Role: !GetAtt QueryAgentLambdaRole.Arn
+      Handler: lambda_function.lambda_handler
+      Timeout: 300
+      MemorySize: 512
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+      Code:
+        ZipFile: |
+          import json
+          def lambda_handler(event, context):
+              return {'statusCode': 200, 'body': json.dumps('Placeholder')}
+
+  # API Gateway
+  AgentAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: !Sub 'bedrock-agent-api-${Environment}'
+      Description: API for Bedrock Customer Support Agent
+      EndpointConfiguration:
+        Types:
+          - REGIONAL
+
+  AgentResource:
+    Type: AWS::ApiGateway::Resource
+    Properties:
+      RestApiId: !Ref AgentAPI
+      ParentId: !GetAtt AgentAPI.RootResourceId
+      PathPart: agent
+
+  AgentMethod:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref AgentAPI
+      ResourceId: !Ref AgentResource
+      HttpMethod: POST
+      AuthorizationType: NONE
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${QueryAgentLambda.Arn}/invocations'
+
+  AgentMethodOptions:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref AgentAPI
+      ResourceId: !Ref AgentResource
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+              method.response.header.Access-Control-Allow-Methods: "'POST,OPTIONS'"
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        RequestTemplates:
+          application/json: '{"statusCode": 200}'
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            method.response.header.Access-Control-Allow-Headers: true
+            method.response.header.Access-Control-Allow-Methods: true
+            method.response.header.Access-Control-Allow-Origin: true
+
+  ApiGatewayInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref QueryAgentLambda
+      Action: lambda:InvokeFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub 'arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${AgentAPI}/*'
+
+  AgentAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    DependsOn:
+      - AgentMethod
+      - AgentMethodOptions
+    Properties:
+      RestApiId: !Ref AgentAPI
+      StageName: !Ref Environment
+
+Outputs:
+  APIEndpoint:
+    Value: !Sub 'https://${AgentAPI}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/agent'
+    Description: Bedrock Agent API Endpoint
+    Export:
+      Name: !Sub '${AWS::StackName}-APIEndpoint'
+  
+  TicketsTableName:
+    Value: !Ref TicketsTable
+    Export:
+      Name: !Sub '${AWS::StackName}-TicketsTable'
+  
+  CustomersTableName:
+    Value: !Ref CustomersTable
+    Export:
+      Name: !Sub '${AWS::StackName}-CustomersTable'
+  
+  ActionGroupLambdaArn:
+    Value: !GetAtt ActionGroupLambda.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-ActionGroupLambdaArn'
+  
+  QueryAgentLambdaArn:
+    Value: !GetAtt QueryAgentLambda.Arn
+    Export:
+      Name: !Sub '${AWS::StackName}-QueryAgentLambdaArn'
+  
+  LambdaCodeBucket:
+    Value: !Ref LambdaCodeBucket
+    Export:
+      Name: !Sub '${AWS::StackName}-LambdaCodeBucket'
