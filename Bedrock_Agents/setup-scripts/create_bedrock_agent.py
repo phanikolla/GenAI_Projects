@@ -388,7 +388,7 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
 def main():
     parser = argparse.ArgumentParser(description='Create AWS Bedrock Agent')
     parser.add_argument('--agent-name', default='customer-support-agent', help='Name for the agent')
-    parser.add_argument('--model-id', default='us.anthropic.claude-3-5-sonnet-20241022-v2:0', help='Bedrock model ID')
+    parser.add_argument('--model-id', default='anthropic.claude-3-5-sonnet-20241022-v2:0', help='Bedrock model ID')
     parser.add_argument('--stack-name', default='bedrock-agent-stack', help='CloudFormation stack name')
     parser.add_argument('--region', default='us-east-1', help='AWS region')
     

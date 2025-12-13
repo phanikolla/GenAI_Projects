@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 STACK_NAME="bedrock-agent-stack"
 ENVIRONMENT="dev"
 REGION="us-east-1"
-MODEL_ID="us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+MODEL_ID="anthropic.claude-3-5-sonnet-20241022-v2:0"
 
 # Detect script directory and change to project root
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
