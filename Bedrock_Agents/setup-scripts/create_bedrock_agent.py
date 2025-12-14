@@ -1,21 +1,44 @@
 #!/usr/bin/env python3
 """
-Script to create and configure AWS Bedrock Agent
+Production script to create and configure AWS Bedrock Agent
 """
 import boto3
 import json
 import time
 import argparse
 import sys
+import logging
 from botocore.exceptions import ClientError
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 def create_agent(agent_name, model_id, stack_name, region='us-east-1'):
     """Create Bedrock Agent with action groups"""
     
-    bedrock_agent = boto3.client('bedrock-agent', region_name=region)
-    cloudformation = boto3.client('cloudformation', region_name=region)
-    iam = boto3.client('iam', region_name=region)
-    lambda_client = boto3.client('lambda', region_name=region)
+    # Validate inputs
+    if not all([agent_name, model_id, stack_name]):
+        raise ValueError("agent_name, model_id, and stack_name are required")
+    
+    try:
+        bedrock_agent = boto3.client('bedrock-agent', region_name=region)
+        cloudformation = boto3.client('cloudformation', region_name=region)
+        iam = boto3.client('iam', region_name=region)
+        lambda_client = boto3.client('lambda', region_name=region)
+        sts = boto3.client('sts')
+        account_id = sts.get_caller_identity()['Account']
+    except Exception as e:
+        print(f"❌ Error initializing AWS clients: {e}")
+        return None
+    
+    # Use system-defined cross-region inference profile for Bedrock Agents
+    # Format: us.anthropic.claude-3-5-sonnet-20241022-v2:0 (for US regions)
+    if model_id.startswith('anthropic.'):
+        # Convert model ID to system-defined inference profile ID
+        inference_profile_id = f"us.{model_id}"
+        print(f"📋 Using inference profile: {inference_profile_id}")
+    else:
+        inference_profile_id = model_id
     
     print(f"🚀 Creating Bedrock Agent: {agent_name}")
     
@@ -69,16 +92,20 @@ def create_agent(agent_name, model_id, stack_name, region='us-east-1'):
         role_arn = role_response['Role']['Arn']
         print(f"✅ Created IAM role: {role_arn}")
         
-        # Attach policy for model invocation
+        # Attach policy for model invocation (foundation models + inference profiles)
+        # System-defined inference profiles have a different ARN format
         policy_document = {
             "Version": "2012-10-17",
             "Statement": [
                 {
                     "Effect": "Allow",
                     "Action": [
-                        "bedrock:InvokeModel"
+                        "bedrock:InvokeModel",
+                        "bedrock:InvokeModelWithResponseStream",
+                        "bedrock:GetInferenceProfile",
+                        "bedrock:ListInferenceProfiles"
                     ],
-                    "Resource": f"arn:aws:bedrock:{region}::foundation-model/{model_id}"
+                    "Resource": "*"
                 }
             ]
         }
@@ -151,7 +178,7 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
             agent_response = bedrock_agent.create_agent(
                 agentName=agent_name,
                 agentResourceRoleArn=role_arn,
-                foundationModel=model_id,
+                foundationModel=inference_profile_id,
                 instruction=agent_instruction,
                 description="Customer support agent for ticket management"
             )
@@ -159,30 +186,29 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
             agent_id = agent_response['agent']['agentId']
             print(f"✅ Created agent with ID: {agent_id}")
             
-            # Wait for agent to be in PREPARED state
+            # Wait for agent to be ready
             print("⏳ Waiting for agent to be ready...")
             max_attempts = 30
             for attempt in range(max_attempts):
                 try:
                     agent_status = bedrock_agent.get_agent(agentId=agent_id)
                     current_status = agent_status['agent']['agentStatus']
-                    print(f"   Agent status: {current_status} (attempt {attempt + 1}/{max_attempts})")
                     
                     if current_status in ['PREPARED', 'NOT_PREPARED']:
-                        print(f"✅ Agent is ready (status: {current_status})")
+                        print(f"✅ Agent is ready")
                         break
                     elif current_status == 'FAILED':
                         print(f"❌ Agent creation failed")
                         return None
                         
-                    time.sleep(10)  # Wait 10 seconds before checking again
+                    time.sleep(10)
                     
                 except ClientError as e:
                     print(f"   Error checking agent status: {e}")
                     time.sleep(5)
                     
             else:
-                print(f"❌ Agent did not become ready within {max_attempts * 10} seconds")
+                print(f"❌ Agent did not become ready within timeout")
                 return None
         
     except ClientError as e:
@@ -228,7 +254,7 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
                 
         except ClientError as list_error:
             # If listing fails, try to create anyway
-            print(f"⚠️ Could not list action groups, attempting to create: {list_error}")
+            print(f"⚠️ Could not list action groups, attempting to create")
             action_group_response = bedrock_agent.create_agent_action_group(
                 agentId=agent_id,
                 agentVersion='DRAFT',
@@ -262,7 +288,6 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
             try:
                 agent_status = bedrock_agent.get_agent(agentId=agent_id)
                 current_status = agent_status['agent']['agentStatus']
-                print(f"   Preparation status: {current_status} (attempt {prep_attempt + 1}/{max_prep_attempts})")
                 
                 if current_status == 'PREPARED':
                     print(f"✅ Agent prepared successfully")
@@ -277,7 +302,7 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
                 print(f"   Error checking preparation status: {e}")
                 time.sleep(5)
         else:
-            print(f"⚠️ Agent preparation timeout, but continuing...")
+            print(f"⚠️ Agent preparation timeout, continuing...")
         
     except ClientError as e:
         print(f"❌ Error preparing agent: {e}")
@@ -313,7 +338,7 @@ Always be professional, empathetic, and solution-oriented. If an issue is beyond
                 
         except ClientError as list_error:
             # If listing fails, try to create anyway
-            print(f"⚠️ Could not list aliases, attempting to create: {list_error}")
+            print(f"⚠️ Could not list aliases, attempting to create")
             alias_response = bedrock_agent.create_agent_alias(
                 agentId=agent_id,
                 agentAliasName='production',

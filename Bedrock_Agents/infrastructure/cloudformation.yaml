@@ -154,6 +154,10 @@ Resources:
                 Action:
                   - 'bedrock:InvokeAgent'
                   - 'bedrock:InvokeModel'
+                  - 'bedrock:InvokeModelWithResponseStream'
+                  - 'bedrock:GetInferenceProfile'
+                  - 'bedrock:ListInferenceProfiles'
+                  - 'bedrock:GetFoundationModel'
                 Resource: '*'
 
   # Query Agent Lambda Function
