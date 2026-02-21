@@ -1,49 +1,117 @@
-# 📚 Manual RAG System (LangChain + FAISS)
+# 🎯 RAG Q&A System
 
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Bedrock-FF9900?logo=amazonaws&style=for-the-badge)](https://aws.amazon.com/bedrock/)
-[![LangChain](https://img.shields.io/badge/LangChain-Orchestration-blue?logo=chainlink&style=for-the-badge)](https://python.langchain.com/)
-[![FAISS](https://img.shields.io/badge/Vector-FAISS-00C7B7?style=for-the-badge)](https://github.com/facebookresearch/faiss)
+[![LangChain](https://img.shields.io/badge/LangChain-0.3-blue?logo=chainlink&style=for-the-badge)](https://python.langchain.com/)
+[![FAISS](https://img.shields.io/badge/FAISS-Vector_Search-00C7B7?style=for-the-badge)](https://github.com/facebookresearch/faiss)
 
-## 📖 Overview
-This project implements a **Retrieval-Augmented Generation (RAG)** system from scratch using LangChain and FAISS. It is designed for scenarios where fine-grained control over document chunking and embedding strategies is required (e.g., complex HR documents or technical manuals).
+A production-ready **Retrieval-Augmented Generation** system that answers questions about PDF documents using semantic search and LLM-powered generation.
 
-### 🚀 Key Features
-*   **Custom Chunking:** Implements specific splitting strategies (RecursiveCharacterTextSplitter) to maintain context overlap.
-*   **Local Vector Store:** Uses FAISS for low-latency, cost-effective vector search without spinning up a dedicated database server.
-*   **Source Attribution:** Returns the exact document and page number used to generate the answer.
+## How It Works
 
-## 🏗️ Architecture
-![Architecture](./RAG.gif)
+```
+PDF Document
+     │
+     ▼
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐
+│  PDF Loader  │────▶│ Text Splitter │────▶│  Titan V2    │
+│  (PyPDF)     │     │ (1000 chars)  │     │  Embeddings  │
+└─────────────┘     └──────────────┘     └──────┬──────┘
+                                                │
+                                                ▼
+                                        ┌──────────────┐
+                                        │  FAISS Index  │
+                                        │ (Vector Store)│
+                                        └──────┬──────┘
+                                                │
+User Question ──▶ Embed ──▶ MMR Search ─────────┘
+                                                │
+                                                ▼
+                                        ┌──────────────┐
+                                        │  Claude 3     │
+                                        │  Sonnet (LLM) │
+                                        └──────┬──────┘
+                                                │
+                                                ▼
+                                          Answer + Sources
+```
 
-## 🛠️ Prerequisites
-*   **AWS Bedrock Access:** Enabled for **Titan Embeddings G1 - Text** and **Claude Instant**.
-*   **Python Libraries:** `langchain`, `faiss-cpu`, `boto3`, `streamlit`.
+## Prerequisites
 
-## 💻 Installation & Usage
+- **Python 3.10+**
+- **AWS Account** with Bedrock access enabled for:
+  - `amazon.titan-embed-text-v2:0` (embeddings)
+  - `anthropic.claude-3-sonnet-20240229-v1:0` (LLM)
+- **AWS CLI** configured with a named profile (default: `default`)
+
+## Quick Start
 
 ```bash
-# 1. Setup Environment
+# 1. Clone and navigate
 cd RAG_Project
+
+# 2. Create a virtual environment
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS/Linux
+
+# 3. Install dependencies
 pip install -r requirements.txt
 
-# 2. Run the Streamlit UI
-streamlit run app.py
+# 4. Configure environment
+copy .env.example .env        # Windows
+# cp .env.example .env        # macOS/Linux
+# Edit .env with your AWS profile and preferences
+
+# 5. Run the app
+streamlit run rag_frontend.py
 ```
 
-**Configuration (Inside `app.py`):**
-```python
-# Adjust chunking parameters for better context
-text_splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200 # Crucial for keeping context across boundaries
-)
+## Project Structure
+
+```
+RAG_Project/
+├── rag_backend.py      # Core RAG pipeline (load → split → embed → index → query)
+├── rag_frontend.py     # Streamlit chat interface
+├── requirements.txt    # Pinned Python dependencies
+├── .env.example        # Environment variable template
+├── .gitignore          # Git ignore rules
+├── RAG.gif             # Architecture animation
+└── README.md
 ```
 
-## 🧠 Key Learnings & Challenges
-*   **The "Lost in the Middle" Phenomenon:** I discovered that LLMs sometimes ignore context in the middle of long prompts. I improved accuracy by implementing a "Max Marginal Relevance" (MMR) search instead of simple similarity search to diversify the retrieved chunks.
-*   **Token Limits:** Handling documents larger than the context window required implementing a strict chunking strategy.
+## Configuration
+
+All settings are configurable via the `.env` file:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AWS_PROFILE` | `default` | AWS CLI profile name |
+| `AWS_REGION` | `us-east-1` | AWS region for Bedrock |
+| `EMBEDDING_MODEL_ID` | `amazon.titan-embed-text-v2:0` | Bedrock embedding model |
+| `LLM_MODEL_ID` | `anthropic.claude-3-sonnet-20240229-v1:0` | Bedrock LLM model |
+| `PDF_SOURCE_URL` | UPL Leave Policy PDF | URL of the PDF to index |
+| `CHUNK_SIZE` | `1000` | Characters per text chunk |
+| `CHUNK_OVERLAP` | `200` | Overlap between chunks |
+| `SEARCH_TYPE` | `mmr` | Retrieval strategy (`mmr` or `similarity`) |
+| `SEARCH_K` | `4` | Number of chunks to retrieve |
+| `SEARCH_FETCH_K` | `8` | Candidates for MMR diversity selection |
+
+## Tech Stack
+
+| Component | Technology |
+|-----------|-----------|
+| **Embeddings** | Amazon Titan Embed Text V2 (1024-dim) |
+| **LLM** | Anthropic Claude 3 Sonnet via Bedrock |
+| **Vector Store** | FAISS (in-memory, local) |
+| **Orchestration** | LangChain 0.3 (`RetrievalQA` chain) |
+| **Document Loader** | PyPDF via `langchain-community` |
+| **Text Splitter** | `RecursiveCharacterTextSplitter` |
+| **Retrieval** | MMR (Max Marginal Relevance) |
+| **Frontend** | Streamlit with chat interface |
+
+## Architecture Diagram
+
+![RAG Architecture](./RAG.gif)
 
 ---
 *Maintained by Phani Kolla*
-
----
