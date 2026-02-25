@@ -1,0 +1,63 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "RAG Retrieval API",
+        "version": "1.0.0",
+        "description": "API for retrieving relevant context from vector database"
+    },
+    "paths": {
+        "/retrieve": {
+            "get": {
+                "summary": "Retrieve relevant context",
+                "description": "Search the vector database for relevant document chunks based on a question",
+                "operationId": "retrieveContext",
+                "parameters": [
+                    {
+                        "name": "question",
+                        "in": "query",
+                        "required": true,
+                        "description": "The question to search for relevant context",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "k",
+                        "in": "query",
+                        "required": false,
+                        "description": "Number of results to return, default is 4",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful retrieval",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "question": {
+                                            "type": "string",
+                                            "description": "The original question"
+                                        },
+                                        "context": {
+                                            "type": "string",
+                                            "description": "Retrieved context from documents"
+                                        },
+                                        "total_results": {
+                                            "type": "string",
+                                            "description": "Number of results found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

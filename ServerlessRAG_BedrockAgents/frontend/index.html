@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ServerlessRAG — AI Document Assistant</title>
+  <meta name="description" content="Upload PDFs and ask questions powered by AWS Bedrock Agents" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>" />
+</head>
+
+<body>
+  <div class="bg-gradient"></div>
+
+  <!-- ═══════ AUTH SCREEN ═══════ -->
+  <div id="auth-screen" class="auth-container">
+    <div class="auth-card">
+      <div class="logo">
+        <div class="logo-icon">🧠</div>
+        <span class="logo-text">ServerlessRAG</span>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <h2>Welcome back</h2>
+        <p class="subtitle">Sign in to your account to continue</p>
+        <div id="login-alert" class="alert"></div>
+        <form onsubmit="app.handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">Email</label>
+            <input id="login-email" class="form-input" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input id="login-password" class="form-input" type="password" placeholder="••••••••" required />
+          </div>
+          <button id="login-btn" class="btn btn-primary" type="submit">
+            <span class="btn-text">Sign In</span>
+          </button>
+        </form>
+        <p class="auth-toggle">
+          Don't have an account? <a href="#" onclick="app.showSignup();return false">Sign up</a>
+        </p>
+      </div>
+
+      <!-- Signup Form -->
+      <div id="signup-form" class="hidden">
+        <h2>Create account</h2>
+        <p class="subtitle">Get started with ServerlessRAG</p>
+        <div id="signup-alert" class="alert"></div>
+        <form onsubmit="app.handleSignup(event)">
+          <div class="form-group">
+            <label for="signup-name">Name</label>
+            <input id="signup-name" class="form-input" type="text" placeholder="Your name" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-email">Email</label>
+            <input id="signup-email" class="form-input" type="email" placeholder="you@example.com" required />
+          </div>
+          <div class="form-group">
+            <label for="signup-password">Password</label>
+            <input id="signup-password" class="form-input" type="password"
+              placeholder="Min 8 chars, uppercase, number, symbol" required />
+          </div>
+          <button id="signup-btn" class="btn btn-primary" type="submit">
+            <span class="btn-text">Create Account</span>
+          </button>
+        </form>
+        <!-- Confirmation code (shown after signup) -->
+        <div id="confirm-form" class="confirm-form">
+          <p class="subtitle">Check your email for a verification code</p>
+          <form onsubmit="app.handleConfirm(event)">
+            <div class="form-group">
+              <label for="confirm-code">Verification Code</label>
+              <input id="confirm-code" class="form-input" type="text" placeholder="123456" required />
+            </div>
+            <button class="btn btn-primary" type="submit">Verify Account</button>
+          </form>
+        </div>
+        <p class="auth-toggle">
+          Already have an account? <a href="#" onclick="app.showLogin();return false">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════ APP DASHBOARD ═══════ -->
+  <div id="app-screen" class="app-layout hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">🧠</div>
+        <span class="logo-text">ServerlessRAG</span>
+      </div>
+
+      <!-- Upload -->
+      <div class="upload-section">
+        <div class="upload-zone" id="upload-zone">
+          <span class="upload-icon">📄</span>
+          <p class="upload-text"><strong>Upload PDF</strong><br />Drag & drop or click to browse</p>
+          <input type="file" accept=".pdf" id="file-input" onchange="app.handleFileSelect(event)" />
+        </div>
+        <div id="upload-progress" class="upload-progress">
+          <div class="progress-bar">
+            <div class="fill" id="progress-fill" style="width:0%"></div>
+          </div>
+          <p class="progress-text" id="progress-text">Uploading...</p>
+        </div>
+      </div>
+
+      <!-- Documents -->
+      <div class="doc-list-header">
+        <span>Documents</span>
+        <span id="doc-count">0</span>
+      </div>
+      <div class="doc-list" id="doc-list">
+        <p class="doc-empty" id="doc-empty">No documents uploaded yet</p>
+      </div>
+
+      <!-- User -->
+      <div class="sidebar-footer">
+        <div class="user-avatar" id="user-avatar">?</div>
+        <div class="user-info">
+          <div class="user-name" id="user-name">User</div>
+          <div class="user-email" id="user-email">—</div>
+        </div>
+        <button class="logout-btn" onclick="app.logout()" title="Sign out">⏻</button>
+      </div>
+    </aside>
+
+    <!-- Main chat area -->
+    <main class="main-content">
+      <div class="chat-header">
+        <h1>💬 Chat</h1>
+        <button class="btn btn-ghost" onclick="app.newSession()" title="New conversation">
+          ✨ New Chat
+        </button>
+      </div>
+
+      <div class="chat-messages" id="chat-messages">
+        <!-- Welcome state -->
+        <div class="chat-welcome" id="chat-welcome">
+          <div class="welcome-icon">🧠</div>
+          <h2>Ask anything about your documents</h2>
+          <p>Upload PDFs and ask questions. I'll find the answers using AI-powered retrieval.</p>
+          <div class="suggestion-cards">
+            <button class="suggestion-card" onclick="app.useSuggestion('Summarize the main points of my documents')">
+              <div class="card-icon">📋</div>
+              Summarize the main points
+            </button>
+            <button class="suggestion-card" onclick="app.useSuggestion('What are the key findings?')">
+              <div class="card-icon">🔍</div>
+              What are the key findings?
+            </button>
+            <button class="suggestion-card" onclick="app.useSuggestion('Compare the topics discussed')">
+              <div class="card-icon">⚖️</div>
+              Compare the topics discussed
+            </button>
+            <button class="suggestion-card" onclick="app.useSuggestion('List all action items mentioned')">
+              <div class="card-icon">✅</div>
+              List action items mentioned
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-area">
+        <div class="chat-input-wrapper">
+          <textarea id="chat-input" class="chat-input" placeholder="Ask a question about your documents..." rows="1"
+            onkeydown="app.handleInputKey(event)" oninput="app.autoResize(this)"></textarea>
+          <button class="send-btn" id="send-btn" onclick="app.sendMessage()" title="Send">
+            ➤
+          </button>
+        </div>
+        <p class="chat-disclaimer">Powered by AWS Bedrock Agents · Claude 3 Sonnet</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div id="delete-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h3>Delete Document</h3>
+      <p>Are you sure you want to delete <strong id="delete-doc-name"></strong>? This cannot be undone.</p>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" onclick="app.cancelDelete()">Cancel</button>
+        <button class="btn btn-danger" onclick="app.confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>

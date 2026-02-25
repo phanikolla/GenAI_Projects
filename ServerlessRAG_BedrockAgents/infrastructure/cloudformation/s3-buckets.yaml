@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'S3 Buckets for Serverless RAG - Documents and FAISS Indexes'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: serverless-rag
+    Description: Project name for resource naming
+
+Resources:
+  # S3 Bucket for documents and FAISS indexes
+  RAGBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-${AWS::AccountId}-${AWS::Region}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteOldVersions
+            Status: Enabled
+            NoncurrentVersionExpirationInDays: 30
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - DELETE
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3000
+
+  # Bucket Policy
+  RAGBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref RAGBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: AllowLambdaAccess
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:DeleteObject
+              - s3:ListBucket
+            Resource:
+              - !GetAtt RAGBucket.Arn
+              - !Sub '${RAGBucket.Arn}/*'
+
+Outputs:
+  BucketName:
+    Description: S3 Bucket Name
+    Value: !Ref RAGBucket
+    Export:
+      Name: !Sub '${ProjectName}-BucketName'
+
+  BucketArn:
+    Description: S3 Bucket ARN
+    Value: !GetAtt RAGBucket.Arn
+    Export:
+      Name: !Sub '${ProjectName}-BucketArn'

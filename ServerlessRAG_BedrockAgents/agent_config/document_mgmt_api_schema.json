@@ -1,0 +1,144 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Document Management API",
+        "version": "1.0.0",
+        "description": "API for managing documents in the RAG system"
+    },
+    "paths": {
+        "/documents/list": {
+            "get": {
+                "summary": "List documents",
+                "description": "List all uploaded documents, optionally filtered by user",
+                "operationId": "listDocuments",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "required": false,
+                        "description": "User ID to filter documents by",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of documents",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "documents": {
+                                            "type": "string",
+                                            "description": "JSON array of document objects"
+                                        },
+                                        "count": {
+                                            "type": "string",
+                                            "description": "Number of documents"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/upload": {
+            "post": {
+                "summary": "Upload document",
+                "description": "Upload a new document for indexing into the vector database",
+                "operationId": "uploadDocument",
+                "parameters": [
+                    {
+                        "name": "filename",
+                        "in": "query",
+                        "required": true,
+                        "description": "Name of the file being uploaded",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "content_base64",
+                        "in": "query",
+                        "required": true,
+                        "description": "Base64 encoded document content",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "user_id",
+                        "in": "query",
+                        "required": true,
+                        "description": "User ID of the document owner",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document uploaded successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Success message"
+                                        },
+                                        "document_id": {
+                                            "type": "string",
+                                            "description": "ID of the uploaded document"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/documents/delete": {
+            "delete": {
+                "summary": "Delete document",
+                "description": "Delete a document by its ID",
+                "operationId": "deleteDocument",
+                "parameters": [
+                    {
+                        "name": "doc_id",
+                        "in": "query",
+                        "required": true,
+                        "description": "Document ID to delete",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Document deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Success message"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

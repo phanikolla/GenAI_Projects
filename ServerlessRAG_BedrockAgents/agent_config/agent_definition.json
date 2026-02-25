@@ -1,0 +1,29 @@
+{
+  "agentName": "ServerlessRAGAgent",
+  "description": "Bedrock Agent for RAG-based question answering with document management",
+  "instruction": "You are a helpful AI assistant that answers questions based on uploaded documents. You have access to a vector database containing document embeddings. When a user asks a question, you should:\n\n1. Use the RAG Retrieval action to search for relevant context from the documents\n2. Analyze the retrieved context carefully\n3. Provide a clear, accurate answer based on the context\n4. If the context doesn't contain enough information, say so honestly\n5. Cite sources when possible by mentioning document IDs or page numbers\n\nYou can also help users manage their documents using the Document Management actions.",
+  "foundationModel": "anthropic.claude-3-sonnet-20240229-v1:0",
+  "idleSessionTTLInSeconds": 600,
+  "actionGroups": [
+    {
+      "actionGroupName": "RAGRetrieval",
+      "description": "Retrieve relevant context from the vector database for answering questions",
+      "actionGroupExecutor": {
+        "lambda": "${RETRIEVAL_LAMBDA_ARN}"
+      },
+      "apiSchema": {
+        "payload": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"RAG Retrieval API\",\"version\":\"1.0.0\",\"description\":\"API for retrieving relevant context from vector database\"},\"paths\":{\"/retrieve\":{\"post\":{\"summary\":\"Retrieve relevant context\",\"description\":\"Search the vector database for relevant document chunks based on a question\",\"operationId\":\"retrieveContext\",\"requestBody\":{\"required\":true,\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\",\"description\":\"The question to search for relevant context\"},\"k\":{\"type\":\"integer\",\"description\":\"Number of results to return (default: 4)\",\"default\":4}},\"required\":[\"question\"]}}}},\"responses\":{\"200\":{\"description\":\"Successful retrieval\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"properties\":{\"question\":{\"type\":\"string\"},\"context\":{\"type\":\"array\",\"items\":{\"type\":\"object\",\"properties\":{\"content\":{\"type\":\"string\"},\"metadata\":{\"type\":\"object\"},\"rank\":{\"type\":\"integer\"}}}},\"total_results\":{\"type\":\"integer\"}}}}}}}}}}"
+      }
+    },
+    {
+      "actionGroupName": "DocumentManagement",
+      "description": "Manage documents - upload, list, and delete",
+      "actionGroupExecutor": {
+        "lambda": "${DOCUMENT_MGMT_LAMBDA_ARN}"
+      },
+      "apiSchema": {
+        "payload": "{\"openapi\":\"3.0.0\",\"info\":{\"title\":\"Document Management API\",\"version\":\"1.0.0\",\"description\":\"API for managing documents in the RAG system\"},\"paths\":{\"/documents/list\":{\"get\":{\"summary\":\"List documents\",\"description\":\"List all documents for a user\",\"operationId\":\"listDocuments\",\"parameters\":[{\"name\":\"user_id\",\"in\":\"query\",\"schema\":{\"type\":\"string\"},\"description\":\"User ID to filter documents\"}],\"responses\":{\"200\":{\"description\":\"List of documents\",\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"properties\":{\"documents\":{\"type\":\"array\",\"items\":{\"type\":\"object\"}},\"count\":{\"type\":\"integer\"}}}}}}}},\"/documents/upload\":{\"post\":{\"summary\":\"Upload document\",\"description\":\"Upload a new document for indexing\",\"operationId\":\"uploadDocument\",\"requestBody\":{\"required\":true,\"content\":{\"application/json\":{\"schema\":{\"type\":\"object\",\"properties\":{\"filename\":{\"type\":\"string\"},\"content_base64\":{\"type\":\"string\",\"description\":\"Base64 encoded document content\"},\"user_id\":{\"type\":\"string\"}},\"required\":[\"filename\",\"content_base64\",\"user_id\"]}}}},\"responses\":{\"200\":{\"description\":\"Document uploaded successfully\"}}}},\"/documents/{doc_id}\":{\"delete\":{\"summary\":\"Delete document\",\"description\":\"Delete a document by ID\",\"operationId\":\"deleteDocument\",\"parameters\":[{\"name\":\"doc_id\",\"in\":\"path\",\"required\":true,\"schema\":{\"type\":\"string\"}}],\"responses\":{\"200\":{\"description\":\"Document deleted successfully\"}}}}}}"
+      }
+    }
+  ]
+}
