@@ -41,6 +41,7 @@ Each project serves as a comprehensive blueprint that developers can fork, custo
 | **4. [Llama 3 Chatbot](./BedrockChatbot)** | 🟡 Intermediate | Llama 3, LangChain, Streamlit | Managing chat memory and session state with open-source models on AWS. |
 | **5. [HR Assistant (RAG)](./RAG_Project)** | 🔴 Advanced | Bedrock, LangChain, S3, FAISS/Chroma | Building a Knowledge Base to chat with internal PDF documents (RAG). |
 | **6. [Serverless E-Learning](./Knowledgebase_Project)** | 🔴 Advanced | Knowledge Bases for Amazon Bedrock, OpenSearch | Full-stack implementation of a personalized learning agent with vector search. |
+| **7. [🧠 ServerlessRAG with Bedrock Agents](./ServerlessRAG_BedrockAgents)** | 🔴 Advanced | Bedrock Agents, Claude 3 Sonnet, Lambda, FAISS, API Gateway, Cognito, S3 | Production-grade serverless RAG system with cost-optimized FAISS vector store (~$1.63/mo vs $250+), S3 static website hosting, and end-to-end IaC deployment. |
 
 ---
 
